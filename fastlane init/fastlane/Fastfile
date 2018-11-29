@@ -1,0 +1,89 @@
+
+default_platform(:ios)
+
+#指定项目的scheme即:App名称
+scheme = “XLsn0w”
+
+#蒲公英api_key和user_key
+pgyer_api_key  = ""
+pgyer_user_key = ""
+
+# App专用密码: Apple ID开启两步验证后 专门设置一个用于fastlane上传的密码
+FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD = ""
+
+platform :ios do
+
+puts "lane执行ad-hoc脚本"
+
+lane :ad_hoc do|options|
+branch = options[:branch]
+
+# “gym开始执行ad-hoc打包ipa”
+
+gym(
+#输出的ipa名称
+output_name:”#{scheme}”,
+# 是否清空以前的编译信息 true：是
+clean:true,
+# 指定打包方式，Release 或者 Debug
+configuration:"Release",
+# 指定打包所使用的输出方式，目前支持app-store, package, ad-hoc, enterprise, development
+export_method:"ad-hoc",
+# 指定输出文件夹
+output_directory:"./fastlane/ad-hoc",
+)
+
+puts "开始上传蒲公英"
+
+pgyer(api_key: “#{pgyer_api_key}”, user_key: “#{pgyer_user_key}”)
+
+end
+
+
+
+# "lane执行development脚本"
+
+lane :develop do|options|
+branch = options[:branch]
+
+puts “gym开始执行development打包ipa”
+
+gym(
+#输出的ipa名称
+output_name:”#{scheme}”,
+# 是否清空以前的编译信息 true：是
+clean:true,
+# 指定打包方式，Release 或者 Debug
+configuration:"Debug",
+# 指定打包所使用的输出方式，目前支持app-store, package, ad-hoc, enterprise, development
+export_method:"development",
+# 指定输出文件夹
+output_directory:"./fastlane/development",
+)
+
+end
+
+
+
+# "lane执行app-store脚本"
+
+#desc "向App Store推送一个新的发布版本"
+lane :app_store do
+build_app(workspace: "TimeForest.xcworkspace", scheme: "TimeForest")
+upload_to_app_store
+
+puts “gym开始执行app-store打包ipa”
+
+gym(
+output_name:”#{scheme}”,
+clean:true,
+configuration:"Release",
+export_method:"app-store",
+output_directory:"./fastlane/app-store",
+)
+
+end
+
+
+
+end
